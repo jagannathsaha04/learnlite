@@ -22,7 +22,13 @@ LEVEL_INSTRUCTIONS = {
 LANGUAGE_INSTRUCTIONS = {
     "English": "Answer in English.",
     "Hindi": "Answer entirely in Hindi (Devanagari script).",
+    "Bengali": "Answer entirely in Bengali (Bangla script).",
     "Tamil": "Answer entirely in Tamil script.",
+}
+
+SUBJECT_INSTRUCTIONS = {
+    "Science": "Focus on conceptual understanding using real-world analogies and simple examples.",
+    "Math": "Solve step-by-step and show all intermediate calculations clearly.",
 }
 
 
@@ -37,18 +43,29 @@ def ask_question(
     level: str = "intermediate",
     subject: str = "general",
     language: str = "English",
+    explain_simply: bool = False,
 ):
     level_instr = LEVEL_INSTRUCTIONS.get(level, LEVEL_INSTRUCTIONS["intermediate"])
     language_instr = LANGUAGE_INSTRUCTIONS.get(language, "Answer in English.")
+    subject_instr = SUBJECT_INSTRUCTIONS.get(
+        subject, "Be accurate, friendly, and educational."
+    )
     subject_ctx = (
         f"You are an expert {subject} teacher."
         if subject != "general"
         else "You are a helpful teacher."
     )
+    simplify_instr = (
+        "Additionally, simplify complex terms into very easy language and short sentences."
+        if explain_simply
+        else ""
+    )
 
     prompt = f"""{subject_ctx}
 
+{subject_instr}
 {level_instr}
+{simplify_instr}
 
 Structure your answer as exactly 3-5 numbered steps.
 Be concise and clear.
@@ -76,5 +93,6 @@ Question: {question}
         "language": language,
         "subject": subject,
         "level": level,
+        "explain_simply": explain_simply,
         "offline": True,
     }
