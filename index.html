@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LearnLite</title>
   <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
@@ -11,26 +11,26 @@
     body {
       font-family: 'DM Sans', sans-serif;
       background: #f4f3ee;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
+      align-items: flex-start;
+      padding: 24px 16px;
     }
 
     .shell {
+      width: 100%; max-width: 660px;
       background: #fff;
       border-radius: 16px;
       border: 1px solid #e5e3db;
-      width: 100%;
-      max-width: 640px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     }
 
-    .header {
+    /* ── header ── */
+    .hdr {
       background: #fff;
       border-bottom: 1px solid #e5e3db;
       padding: 14px 20px;
@@ -39,56 +39,91 @@
       gap: 12px;
     }
 
-    .avatar {
+    .hdr-av {
       width: 36px; height: 36px;
       border-radius: 50%;
       background: #1D9E75;
       display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
+      font-size: 18px; flex-shrink: 0;
     }
 
-    .header h1 {
+    .hdr-info h1 {
       font-family: 'Lora', serif;
-      font-size: 15px;
-      font-weight: 500;
+      font-size: 15px; font-weight: 500;
       color: #1a1a18;
     }
 
-    .header p { font-size: 12px; color: #888; }
+    .hdr-info p { font-size: 12px; color: #888; }
 
-    .dot { width: 7px; height: 7px; background: #1D9E75; border-radius: 50%; margin-left: auto; }
+    .offline-badge {
+      margin-left: auto;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: #E1F5EE;
+      color: #085041;
+      border: 1px solid #5DCAA5;
+      display: flex; align-items: center; gap: 5px;
+    }
 
-    .mode-bar {
+    .offline-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #1D9E75;
+    }
+
+    /* ── controls ── */
+    .controls {
       background: #f8f7f2;
       border-bottom: 1px solid #e5e3db;
-      padding: 8px 20px;
+      padding: 10px 20px;
       display: flex;
-      gap: 8px;
-      align-items: center;
       flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
 
-    .mode-label { font-size: 12px; color: #888; margin-right: 4px; }
-
-    .mode-btn {
-      font-size: 12px; padding: 4px 12px;
-      border-radius: 99px; border: 1px solid #d5d3ca;
-      background: transparent; color: #666;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-      transition: all 0.15s;
+    .ctrl-group {
+      display: flex; flex-direction: column; gap: 3px;
     }
 
-    .mode-btn.active { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+    .ctrl-label {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
 
-    .subject-select {
-      margin-left: auto; font-size: 12px;
-      padding: 4px 10px;
+    .ctrl-group select {
+      font-size: 13px;
+      padding: 5px 10px;
       border-radius: 8px;
-      border: 1px solid #d5d3ca;
-      background: #fff; color: #666;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #333;
       font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
     }
 
+    .level-btns { display: flex; gap: 5px; }
+
+    .lvl-btn {
+      font-size: 12px; padding: 5px 12px;
+      border-radius: 99px;
+      border: 1px solid #d5d3ca;
+      background: transparent; color: #666;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.14s;
+    }
+
+    .lvl-btn.active {
+      background: #1D9E75;
+      border-color: #1D9E75;
+      color: #fff;
+    }
+
+    /* ── chips ── */
     .chips {
       padding: 10px 20px 0;
       display: flex; gap: 8px; flex-wrap: wrap;
@@ -96,36 +131,38 @@
 
     .chip {
       font-size: 12px; padding: 5px 12px;
-      border-radius: 99px; border: 1px solid #d5d3ca;
+      border-radius: 99px;
+      border: 1px solid #d5d3ca;
       background: #f8f7f2; color: #666;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-      transition: all 0.15s;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.14s;
     }
 
     .chip:hover { border-color: #1D9E75; color: #0F6E56; background: #E1F5EE; }
 
+    /* ── chat ── */
     .chat {
       flex: 1; overflow-y: auto;
       padding: 20px;
       display: flex; flex-direction: column;
       gap: 16px;
-      min-height: 320px;
+      min-height: 300px;
       max-height: 420px;
     }
 
-    .msg { display: flex; gap: 10px; align-items: flex-start; animation: up 0.2s ease; }
+    .msg { display: flex; gap: 10px; align-items: flex-start; animation: fadeUp 0.2s ease; }
     .msg.user { flex-direction: row-reverse; }
 
-    @keyframes up {
-      from { opacity: 0; transform: translateY(6px); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(5px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
     .m-av {
       width: 28px; height: 28px;
       border-radius: 50%;
-      background: #f0ede6;
-      border: 1px solid #e5e3db;
+      background: #f0ede6; border: 1px solid #e5e3db;
       display: flex; align-items: center; justify-content: center;
       font-size: 12px; color: #888; flex-shrink: 0;
     }
@@ -133,7 +170,7 @@
     .msg.bot .m-av { background: #E1F5EE; color: #0F6E56; border-color: #5DCAA5; }
 
     .bubble {
-      max-width: 74%; padding: 10px 14px;
+      max-width: 76%; padding: 10px 14px;
       border-radius: 14px; font-size: 14px;
       line-height: 1.65; color: #1a1a18;
       background: #fff; border: 1px solid #e5e3db;
@@ -157,13 +194,25 @@
       flex-shrink: 0; margin-top: 2px;
     }
 
+    .lang-tag {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: #faeeda;
+      color: #633806;
+      border: 1px solid #EF9F27;
+      margin-bottom: 6px;
+    }
+
     .thinking { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
-    .td { width: 7px; height: 7px; border-radius: 50%; background: #9FE1CB; animation: b 1.2s infinite; }
+    .td { width: 7px; height: 7px; border-radius: 50%; background: #9FE1CB; animation: bounce 1.2s infinite; }
     .td:nth-child(2) { animation-delay: 0.2s; }
     .td:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes b { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
 
-    .input-bar {
+    /* ── input bar ── */
+    .ibar {
       background: #fff;
       border-top: 1px solid #e5e3db;
       padding: 12px 16px;
@@ -175,7 +224,8 @@
       border: 1px solid #d5d3ca;
       border-radius: 8px;
       padding: 9px 14px;
-      font-size: 14px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
       background: #f8f7f2; color: #1a1a18;
       outline: none; transition: border-color 0.15s;
     }
@@ -187,7 +237,7 @@
       border-radius: 50%; background: #1D9E75;
       border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: transform 0.1s, background 0.15s;
+      transition: transform 0.1s, background 0.15s; flex-shrink: 0;
     }
 
     .send-btn:hover { background: #0F6E56; }
@@ -197,58 +247,92 @@
   </style>
 </head>
 <body>
+
 <div class="shell">
-  <div class="header">
-    <div class="avatar">🎓</div>
-    <div>
+
+  <!-- header -->
+  <div class="hdr">
+    <div class="hdr-av">&#127979;</div>
+    <div class="hdr-info">
       <h1>LearnLite</h1>
-      <p>Powered by Gemma 4 · Offline</p>
+      <p>Powered by Gemma 4 via Ollama</p>
     </div>
-    <div class="dot"></div>
+    <div class="offline-badge">
+      <div class="offline-dot"></div>
+      Running offline
+    </div>
   </div>
 
-  <div class="mode-bar">
-    <span class="mode-label">Mode:</span>
-    <button class="mode-btn active" onclick="setMode('normal',this)">Normal</button>
-    <button class="mode-btn" onclick="setMode('simple',this)">Simple (age 8)</button>
-    <button class="mode-btn" onclick="setMode('advanced',this)">Advanced</button>
-    <select class="subject-select" id="subject">
-      <option value="general">All subjects</option>
-      <option value="Mathematics">Mathematics</option>
-      <option value="Science">Science</option>
-      <option value="History">History</option>
-      <option value="English">English</option>
-    </select>
+  <!-- controls -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <span class="ctrl-label">Level</span>
+      <div class="level-btns">
+        <button class="lvl-btn" onclick="setLevel('beginner',this)">Beginner</button>
+        <button class="lvl-btn active" onclick="setLevel('intermediate',this)">Student</button>
+        <button class="lvl-btn" onclick="setLevel('advanced',this)">Advanced</button>
+      </div>
+    </div>
+
+    <div class="ctrl-group">
+      <span class="ctrl-label">Subject</span>
+      <select id="subject">
+        <option value="general">All subjects</option>
+        <option value="Science">Science</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="History">History</option>
+        <option value="English">English</option>
+        <option value="Physics">Physics</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Biology">Biology</option>
+      </select>
+    </div>
+
+    <div class="ctrl-group">
+      <span class="ctrl-label">Language</span>
+      <select id="language">
+        <option value="English">English</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Tamil">Tamil</option>
+      </select>
+    </div>
   </div>
 
+  <!-- chips -->
   <div class="chips" id="chips">
-    <button class="chip" onclick="useChip(this)">Why is the sky blue?</button>
     <button class="chip" onclick="useChip(this)">What is photosynthesis?</button>
     <button class="chip" onclick="useChip(this)">Explain gravity</button>
+    <button class="chip" onclick="useChip(this)">Solve 2x + 5 = 15</button>
+    <button class="chip" onclick="useChip(this)">Why is the sky blue?</button>
   </div>
 
+  <!-- chat -->
   <div class="chat" id="chat">
     <div class="msg bot">
       <div class="m-av">T</div>
-      <div class="bubble">Hello! I'm your AI tutor. Ask me anything and I'll explain it step by step. What would you like to learn today?</div>
+      <div class="bubble">
+        Namaste! I'm your AI tutor. I can explain topics in English, Hindi, or Tamil — at any level you choose. What would you like to learn today?
+      </div>
     </div>
   </div>
 
-  <div class="input-bar">
-    <input class="qinput" id="qinput" type="text" placeholder="Ask a question..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+  <!-- input -->
+  <div class="ibar">
+    <input class="qinput" id="qinput" type="text" placeholder="Ask a question in any language..." onkeydown="if(event.key==='Enter') sendMsg()"/>
     <button class="send-btn" onclick="sendMsg()">
       <svg class="si" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
     </button>
   </div>
+
 </div>
 
 <script>
   const API = "http://127.0.0.1:8000";
-  let mode = "normal";
+  let currentLevel = "intermediate";
 
-  function setMode(m, btn) {
-    mode = m;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  function setLevel(l, btn) {
+    currentLevel = l;
+    document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
 
@@ -257,32 +341,51 @@
     sendMsg();
   }
 
-  function addMsg(content, role) {
+  function addMsg(content, role, language) {
     const chat = document.getElementById('chat');
-    const div = document.createElement('div');
-    div.className = 'msg ' + role;
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + role;
+
     const av = document.createElement('div');
     av.className = 'm-av';
     av.textContent = role === 'user' ? 'U' : 'T';
+
     const bub = document.createElement('div');
     bub.className = 'bubble';
-    if (typeof content === 'string') {
-      bub.textContent = content;
-    } else {
-      content.split('\n').filter(l => l.trim()).forEach((line, i) => {
-        const s = document.createElement('div');
-        s.className = 'step';
-        const sn = document.createElement('span');
-        sn.className = 'sn';
-        sn.textContent = i + 1;
-        const sp = document.createElement('span');
-        sp.textContent = line.replace(/^\d+[\.\)]\s*/, '');
-        s.appendChild(sn); s.appendChild(sp);
-        bub.appendChild(s);
-      });
+
+    if (role === 'bot' && language && language !== 'English') {
+      const tag = document.createElement('span');
+      tag.className = 'lang-tag';
+      tag.textContent = language;
+      bub.appendChild(tag);
     }
-    div.appendChild(av); div.appendChild(bub);
-    chat.appendChild(div);
+
+    if (typeof content === 'string') {
+      const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
+      lines.forEach((line, i) => {
+        const cleaned = line.replace(/^\d+[\.\)]\s*/, '');
+        if (!cleaned) return;
+        if (lines.length > 1) {
+          const s = document.createElement('div');
+          s.className = 'step';
+          const sn = document.createElement('span');
+          sn.className = 'sn';
+          sn.textContent = i + 1;
+          const sp = document.createElement('span');
+          sp.textContent = cleaned;
+          s.appendChild(sn); s.appendChild(sp);
+          bub.appendChild(s);
+        } else {
+          bub.appendChild(document.createTextNode(cleaned));
+        }
+      });
+    } else {
+      bub.textContent = content;
+    }
+
+    wrap.appendChild(av);
+    wrap.appendChild(bub);
+    chat.appendChild(wrap);
     chat.scrollTop = chat.scrollHeight;
   }
 
@@ -304,15 +407,18 @@
     addMsg(q, 'user');
     addThinking();
 
+    const subject  = document.getElementById('subject').value;
+    const language = document.getElementById('language').value;
+
     try {
-      const subject = document.getElementById('subject').value;
-      const res = await fetch(`${API}/ask?question=${encodeURIComponent(q)}&mode=${mode}&subject=${encodeURIComponent(subject)}`, { method: 'POST' });
+      const params = new URLSearchParams({ question: q, level: currentLevel, subject, language });
+      const res = await fetch(`${API}/ask?${params}`, { method: 'POST' });
       const data = await res.json();
       document.getElementById('thinking')?.remove();
-      addMsg(data.answer, 'bot');
+      addMsg(data.answer, 'bot', data.language);
     } catch (e) {
       document.getElementById('thinking')?.remove();
-      addMsg("Couldn't reach the backend. Make sure Ollama and uvicorn are running!", 'bot');
+      addMsg("Cannot reach the backend. Make sure Ollama is running and uvicorn app:app --reload is started.", 'bot');
     }
   }
 </script>
