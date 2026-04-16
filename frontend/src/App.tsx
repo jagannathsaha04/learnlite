@@ -315,20 +315,20 @@ export default function App() {
     : messages;
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl p-4 md:p-6 bg-gradient-to-br from-slate-50 to-blue-50">
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <header className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-lg text-white">
+    <main className="mx-auto min-h-screen w-full max-w-5xl p-4 md:p-6 bg-gradient-to-br from-gray-900 to-gray-800">
+      <section className="overflow-hidden rounded-2xl border border-gray-700 bg-gray-800 shadow-lg">
+        <header className="flex items-center gap-3 border-b border-gray-700 px-5 py-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-lg text-white">
             L
           </div>
           <div>
-            <h1 className="text-base font-semibold text-slate-900">LearnLite</h1>
-            <p className="text-xs text-slate-500">Your Offline AI Tutor • Streaming Responses • Smart Memory • LaTeX Math</p>
+            <h1 className="text-base font-semibold text-white">LearnLite</h1>
+            <p className="text-xs text-slate-400">Intelligent AI Tutor • Instant Responses • Persistent Memory • LaTeX Support</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
-              className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-gray-600 px-2 py-1 text-xs text-gray-300 hover:bg-gray-700"
               onClick={() => setShowBookmarksOnly((v) => !v)}
               title={showBookmarksOnly ? "View all messages" : "View saved responses"}
             >
@@ -336,7 +336,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+              className="rounded-lg border border-gray-600 px-2 py-1 text-xs text-gray-300 hover:bg-gray-700"
               onClick={newChat}
               title="Clear chat and start fresh"
             >
@@ -345,9 +345,9 @@ export default function App() {
           </div>
         </header>
 
-        <div className="grid gap-3 border-b border-slate-200 bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-3 border-b border-gray-700 bg-gray-700 p-4 md:grid-cols-2 xl:grid-cols-5">
           <div className="xl:col-span-2">
-            <p className="mb-2 text-xs font-medium text-slate-500">
+            <p className="mb-2 text-xs font-medium text-gray-400">
               Difficulty
             </p>
             <div className="flex flex-wrap gap-2">
@@ -357,8 +357,8 @@ export default function App() {
                   type="button"
                   onClick={() => setLevel(lvl)}
                   className={`rounded-full border px-3 py-1 text-xs transition-all duration-200 ${level === lvl
-                    ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-400"
-                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                    ? "border-blue-500 bg-blue-500 text-white hover:bg-blue-400"
+                    : "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-600"
                     }`}
                 >
                   {levelLabel[lvl]}
@@ -367,10 +367,10 @@ export default function App() {
             </div>
           </div>
 
-          <label className="flex flex-col gap-1 text-xs text-slate-500">
+          <label className="flex flex-col gap-1 text-xs text-gray-400">
             Subject
             <select
-              className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700"
+              className="rounded-lg border border-gray-600 bg-gray-800 px-2 py-2 text-sm text-gray-300"
               value={subject}
               onChange={(e) => setSubject(e.target.value as Subject)}
             >
@@ -380,10 +380,10 @@ export default function App() {
             </select>
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-slate-500">
+          <label className="flex flex-col gap-1 text-xs text-gray-400">
             Language
             <select
-              className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700"
+              className="rounded-lg border border-gray-600 bg-gray-800 px-2 py-2 text-sm text-gray-300"
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
             >
@@ -394,7 +394,7 @@ export default function App() {
             </select>
           </label>
 
-          <div className="space-y-2 text-xs text-slate-600">
+          <div className="space-y-2 text-xs text-gray-400">
             <label className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
@@ -414,12 +414,12 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 border-b border-slate-200 px-4 py-3">
+        <div className="flex flex-wrap gap-2 border-b border-gray-700 px-4 py-3">
           {starters.map((item) => (
             <button
               key={item}
               type="button"
-              className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
+              className="rounded-full border border-gray-600 bg-gray-700 px-3 py-1 text-xs text-gray-300 hover:border-blue-400 hover:bg-blue-900"
               onClick={() => void sendMessage(item)}
               aria-label={`Example question: ${item}`}
             >
@@ -428,7 +428,7 @@ export default function App() {
           ))}
         </div>
 
-        <section className="h-[430px] space-y-4 overflow-y-auto bg-white p-4">
+        <section className="h-[430px] space-y-4 overflow-y-auto bg-gray-800 p-4">
           {visibleMessages.map((message) => (
             <div
               key={message.id}
@@ -436,22 +436,22 @@ export default function App() {
             >
               <div
                 className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${message.role === "user"
-                  ? "rounded-br-md bg-emerald-600 text-white"
-                  : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
+                  ? "rounded-br-md bg-blue-600 text-white"
+                  : "rounded-bl-md border border-gray-600 bg-gray-700 text-gray-200"
                   }`}
               >
                 <div className="mb-2 flex items-center gap-2">
                   {message.role === "assistant" &&
                     message.language &&
                     message.language !== "English" ? (
-                    <div className="inline-block rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                    <div className="inline-block rounded-full border border-yellow-500 bg-yellow-900 px-2 py-0.5 text-[10px] font-medium text-yellow-300">
                       {message.language}
                     </div>
                   ) : null}
                   {message.role === "assistant" ? (
                     <button
                       type="button"
-                      className="rounded border border-slate-300 px-2 py-0.5 text-[10px] text-slate-600 hover:bg-slate-50"
+                      className="rounded border border-gray-600 px-2 py-0.5 text-[10px] text-gray-400 hover:bg-gray-700"
                       onClick={() => toggleBookmark(message.id)}
                     >
                       {message.bookmarked ? "Bookmarked" : "Bookmark"}
@@ -472,12 +472,12 @@ export default function App() {
             </div>
           ))}
 
-          {loading ? <div className="text-sm text-slate-500 flex items-center gap-1"><span>Thinking</span><div className="animate-pulse">...</div></div> : null}
+          {loading ? <div className="text-sm text-gray-400 flex items-center gap-1"><span>Thinking</span><div className="animate-pulse">...</div></div> : null}
         </section>
 
-        <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 p-4">
+        <footer className="flex flex-wrap items-center gap-2 border-t border-gray-700 p-4">
           <input
-            className="min-w-[240px] flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+            className="min-w-[240px] flex-1 rounded-xl border border-gray-600 px-3 py-2 text-sm outline-none focus:border-blue-500"
             value={question}
             placeholder="Ask a question in any language..."
             onChange={(e) => setQuestion(e.target.value)}
@@ -487,7 +487,7 @@ export default function App() {
           />
           <button
             type="button"
-            className="rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700"
+            className="rounded-xl border border-gray-600 px-3 py-2 text-sm text-gray-300"
             onClick={startVoiceInput}
             disabled={!voiceInputSupported}
             title={voiceInputSupported ? "Voice input" : "Speech recognition not supported"}
@@ -496,7 +496,7 @@ export default function App() {
           </button>
           <button
             type="button"
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60 focus:ring-2 focus:ring-emerald-500"
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 focus:ring-2 focus:ring-blue-500"
             onClick={() => void sendMessage()}
             disabled={loading}
           >
