@@ -40,6 +40,8 @@ type PersistedState = {
 const STORAGE_KEY = "learnlite_chat_v3";
 const MAX_QUESTION_CHARS = 600;
 
+const API = "http://localhost:8000";
+
 const starters = [
   "What is photosynthesis?",
   "Explain gravity in simple words",
