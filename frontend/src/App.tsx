@@ -37,9 +37,7 @@ type PersistedState = {
   voiceOutput: boolean;
 };
 
-const API = "http://127.0.0.1:8000";
-const STORAGE_KEY = "learnlite_chat_v2";
-const MAX_CLIENT_HISTORY = 12;
+const STORAGE_KEY = "learnlite_chat_v3";
 const MAX_QUESTION_CHARS = 600;
 
 const starters = [
@@ -50,9 +48,9 @@ const starters = [
 ];
 
 const levelLabel: Record<Level, string> = {
-  beginner: "Beginner",
-  intermediate: "Student",
-  advanced: "Advanced",
+  beginner: "Easy",
+  intermediate: "Medium",
+  advanced: "Expert",
 };
 
 const defaultWelcome: Message[] = [
@@ -215,7 +213,7 @@ export default function App() {
         {
           id: crypto.randomUUID(),
           role: "assistant",
-          text: `Question too long. Keep it under ${MAX_QUESTION_CHARS} characters.`,
+          text: `Question too long—keep it under ${MAX_QUESTION_CHARS} characters for best results.`,
           language: "English",
         },
       ]);
@@ -301,7 +299,7 @@ export default function App() {
           msg.id === assistantId
             ? {
               ...msg,
-              text: `Cannot reach backend/Ollama. ${detail}. Start backend (\`uvicorn app:app --reload\`) and Ollama.`,
+              text: `Oops! Can't connect to the backend. ${detail}. Please start the server with \`uvicorn app:app --reload\` and ensure Ollama is running.`,
               language: "English",
             }
             : msg
@@ -317,7 +315,7 @@ export default function App() {
     : messages;
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl p-4 md:p-6">
+    <main className="mx-auto min-h-screen w-full max-w-5xl p-4 md:p-6 bg-gradient-to-br from-slate-50 to-blue-50">
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <header className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-lg text-white">
@@ -325,30 +323,32 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-slate-900">LearnLite</h1>
-            <p className="text-xs text-slate-500">Offline + Streaming + Memory + KaTeX</p>
+            <p className="text-xs text-slate-500">Your Offline AI Tutor • Streaming Responses • Smart Memory • LaTeX Math</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
               className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
               onClick={() => setShowBookmarksOnly((v) => !v)}
+              title={showBookmarksOnly ? "View all messages" : "View saved responses"}
             >
-              {showBookmarksOnly ? "Show all" : "Bookmarks"}
+              {showBookmarksOnly ? "All Messages" : "Saved"}
             </button>
             <button
               type="button"
               className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
               onClick={newChat}
+              title="Clear chat and start fresh"
             >
-              New chat
+              Start New
             </button>
           </div>
         </header>
 
         <div className="grid gap-3 border-b border-slate-200 bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-5">
           <div className="xl:col-span-2">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-              Level
+            <p className="mb-2 text-xs font-medium text-slate-500">
+              Difficulty
             </p>
             <div className="flex flex-wrap gap-2">
               {(["beginner", "intermediate", "advanced"] as Level[]).map((lvl) => (
@@ -356,9 +356,9 @@ export default function App() {
                   key={lvl}
                   type="button"
                   onClick={() => setLevel(lvl)}
-                  className={`rounded-full border px-3 py-1 text-xs ${level === lvl
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-slate-300 bg-white text-slate-700"
+                  className={`rounded-full border px-3 py-1 text-xs transition-all duration-200 ${level === lvl
+                    ? "border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-400"
+                    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
                     }`}
                 >
                   {levelLabel[lvl]}
@@ -401,7 +401,7 @@ export default function App() {
                 checked={explainSimply}
                 onChange={(e) => setExplainSimply(e.target.checked)}
               />
-              Explain Simply Mode
+              Simple Mode
             </label>
             <label className="flex cursor-pointer items-center gap-2">
               <input
@@ -409,7 +409,7 @@ export default function App() {
                 checked={voiceOutput}
                 onChange={(e) => setVoiceOutput(e.target.checked)}
               />
-              Voice Output
+              Voice Responses
             </label>
           </div>
         </div>
@@ -421,6 +421,7 @@ export default function App() {
               type="button"
               className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
               onClick={() => void sendMessage(item)}
+              aria-label={`Example question: ${item}`}
             >
               {item}
             </button>
@@ -471,7 +472,7 @@ export default function App() {
             </div>
           ))}
 
-          {loading ? <div className="text-sm text-slate-500">Streaming response...</div> : null}
+          {loading ? <div className="text-sm text-slate-500 flex items-center gap-1"><span>Thinking</span><div className="animate-pulse">...</div></div> : null}
         </section>
 
         <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 p-4">
@@ -495,7 +496,7 @@ export default function App() {
           </button>
           <button
             type="button"
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60 focus:ring-2 focus:ring-emerald-500"
             onClick={() => void sendMessage()}
             disabled={loading}
           >
