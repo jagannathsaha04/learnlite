@@ -38,6 +38,7 @@ type PersistedState = {
 };
 
 const STORAGE_KEY = "learnlite_chat_v3";
+const MAX_CLIENT_HISTORY = 12;
 const MAX_QUESTION_CHARS = 600;
 
 const API = "http://localhost:8000";
@@ -65,9 +66,10 @@ const defaultWelcome: Message[] = [
 ];
 
 function buildHistory(messages: Message[]) {
+  const maxHistory = typeof MAX_CLIENT_HISTORY === "number" ? MAX_CLIENT_HISTORY : 12;
   return messages
     .filter((m) => (m.role === "user" || m.role === "assistant") && m.text.trim().length > 0)
-    .slice(-MAX_CLIENT_HISTORY)
+    .slice(-maxHistory)
     .map((m) => ({
       role: m.role,
       content: m.text.trim().slice(0, 1200),
