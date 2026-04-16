@@ -1,4 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 
 type Level = "beginner" | "intermediate" | "advanced";
 type Language = "English" | "Hindi" | "Bengali" | "Tamil";
@@ -10,24 +13,40 @@ type Message = {
   role: Role;
   text: string;
   language?: Language;
+  bookmarked?: boolean;
 };
 
-type AskResponse = {
-  answer: string;
+type StreamEvent =
+  | { type: "token"; token: string }
+  | {
+    type: "done";
+    language: Language;
+    subject: Subject;
+    level: Level;
+    explain_simply: boolean;
+    context_turns_used: number;
+  }
+  | { type: "error"; message: string };
+
+type PersistedState = {
+  messages: Message[];
+  level: Level;
   language: Language;
   subject: Subject;
-  level: Level;
-  explain_simply: boolean;
-  offline: boolean;
+  explainSimply: boolean;
+  voiceOutput: boolean;
 };
 
 const API = "http://127.0.0.1:8000";
+const STORAGE_KEY = "learnlite_chat_v2";
+const MAX_CLIENT_HISTORY = 12;
+const MAX_QUESTION_CHARS = 600;
 
 const starters = [
   "What is photosynthesis?",
   "Explain gravity in simple words",
   "Solve 2x + 5 = 15",
-  "Why is the sky blue?",
+  "Derive quadratic formula",
 ];
 
 const levelLabel: Record<Level, string> = {
@@ -36,32 +55,62 @@ const levelLabel: Record<Level, string> = {
   advanced: "Advanced",
 };
 
-function formatSteps(text: string): string[] {
-  const lines = text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+const defaultWelcome: Message[] = [
+  {
+    id: crypto.randomUUID(),
+    role: "assistant",
+    text: "Hi! I am LearnLite, your AI tutor. What would you like to learn today?",
+    language: "English",
+  },
+];
 
-  return lines.map((line) => line.replace(/^\d+[\.\)]\s*/, "").trim());
+function buildHistory(messages: Message[]) {
+  return messages
+    .filter((m) => (m.role === "user" || m.role === "assistant") && m.text.trim().length > 0)
+    .slice(-MAX_CLIENT_HISTORY)
+    .map((m) => ({
+      role: m.role,
+      content: m.text.trim().slice(0, 1200),
+    }));
+}
+
+function parseSseEvents(block: string): StreamEvent[] {
+  const events: StreamEvent[] = [];
+  const lines = block.split("\n");
+  const dataLine = lines.find((line) => line.startsWith("data: "));
+  if (!dataLine) return events;
+  try {
+    events.push(JSON.parse(dataLine.slice(6)) as StreamEvent);
+  } catch {
+    // Ignore malformed frames.
+  }
+  return events;
+}
+
+function loadPersisted(): PersistedState | null {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as PersistedState;
+  } catch {
+    return null;
+  }
 }
 
 export default function App() {
+  const persisted = loadPersisted();
+  const [messages, setMessages] = useState<Message[]>(
+    persisted?.messages?.length ? persisted.messages : defaultWelcome
+  );
   const [question, setQuestion] = useState("");
-  const [level, setLevel] = useState<Level>("intermediate");
-  const [language, setLanguage] = useState<Language>("English");
-  const [subject, setSubject] = useState<Subject>("general");
-  const [explainSimply, setExplainSimply] = useState(false);
-  const [voiceOutput, setVoiceOutput] = useState(false);
+  const [level, setLevel] = useState<Level>(persisted?.level ?? "intermediate");
+  const [language, setLanguage] = useState<Language>(persisted?.language ?? "English");
+  const [subject, setSubject] = useState<Subject>(persisted?.subject ?? "general");
+  const [explainSimply, setExplainSimply] = useState<boolean>(persisted?.explainSimply ?? false);
+  const [voiceOutput, setVoiceOutput] = useState<boolean>(persisted?.voiceOutput ?? false);
   const [listening, setListening] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      text: "Hi! I am LearnLite. Ask any Science or Math question, switch your level and language live, and learn fully offline.",
-      language: "English",
-    },
-  ]);
+  const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
 
   const voiceInputSupported = useMemo(() => {
     const maybeWindow = window as Window & {
@@ -71,11 +120,20 @@ export default function App() {
     return Boolean(maybeWindow.webkitSpeechRecognition || maybeWindow.SpeechRecognition);
   }, []);
 
-  const speak = (text: string, selectedLanguage: Language) => {
-    if (!voiceOutput || !("speechSynthesis" in window)) {
-      return;
-    }
+  useEffect(() => {
+    const data: PersistedState = {
+      messages,
+      level,
+      language,
+      subject,
+      explainSimply,
+      voiceOutput,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [messages, level, language, subject, explainSimply, voiceOutput]);
 
+  const speak = (text: string, selectedLanguage: Language) => {
+    if (!voiceOutput || !("speechSynthesis" in window)) return;
     const utterance = new SpeechSynthesisUtterance(text);
     const localeMap: Record<Language, string> = {
       English: "en-IN",
@@ -89,9 +147,7 @@ export default function App() {
   };
 
   const startVoiceInput = () => {
-    if (!voiceInputSupported) {
-      return;
-    }
+    if (!voiceInputSupported) return;
 
     const maybeWindow = window as Window & {
       webkitSpeechRecognition?: new () => {
@@ -115,12 +171,9 @@ export default function App() {
         start: () => void;
       };
     };
-
     const SpeechRecognitionImpl =
       maybeWindow.SpeechRecognition || maybeWindow.webkitSpeechRecognition;
-    if (!SpeechRecognitionImpl) {
-      return;
-    }
+    if (!SpeechRecognitionImpl) return;
 
     const recognizer = new SpeechRecognitionImpl();
     const localeMap: Record<Language, string> = {
@@ -133,63 +186,135 @@ export default function App() {
     recognizer.interimResults = false;
     recognizer.maxAlternatives = 1;
     setListening(true);
-    recognizer.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setQuestion(transcript);
-    };
+    recognizer.onresult = (event) => setQuestion(event.results[0][0].transcript);
     recognizer.onend = () => setListening(false);
     recognizer.start();
   };
 
+  const toggleBookmark = (id: string) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === id ? { ...msg, bookmarked: !msg.bookmarked } : msg
+      )
+    );
+  };
+
+  const newChat = () => {
+    setMessages(defaultWelcome);
+    setQuestion("");
+    setShowBookmarksOnly(false);
+  };
+
   const sendMessage = async (prefill?: string) => {
     const q = (prefill ?? question).trim();
-    if (!q || loading) {
+    if (!q || loading) return;
+
+    if (q.length > MAX_QUESTION_CHARS) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          text: `Question too long. Keep it under ${MAX_QUESTION_CHARS} characters.`,
+          language: "English",
+        },
+      ]);
       return;
     }
 
     setQuestion("");
     setLoading(true);
-    setMessages((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: "user", text: q },
-    ]);
+    const userMessage: Message = { id: crypto.randomUUID(), role: "user", text: q };
+    const assistantId = crypto.randomUUID();
+    const assistantPlaceholder: Message = {
+      id: assistantId,
+      role: "assistant",
+      text: "",
+      language,
+    };
+    const withUser = [...messages, userMessage];
+    setMessages([...withUser, assistantPlaceholder]);
 
     try {
-      const params = new URLSearchParams({
-        question: q,
-        level,
-        subject,
-        language,
-        explain_simply: String(explainSimply),
+      const response = await fetch(`${API}/ask/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: q,
+          level,
+          subject,
+          language,
+          explain_simply: explainSimply,
+          history: buildHistory(withUser),
+        }),
       });
 
-      const response = await fetch(`${API}/ask?${params}`, { method: "POST" });
-      const data = (await response.json()) as AskResponse;
+      if (!response.ok || !response.body) {
+        throw new Error(`Request failed (${response.status})`);
+      }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: data.answer,
-          language: data.language,
-        },
-      ]);
-      speak(data.answer, data.language);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: "Cannot reach backend/Ollama. Start LearnLite backend (`uvicorn app:app --reload`) and Ollama.",
-          language: "English",
-        },
-      ]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let rendered = "";
+      let finalLanguage: Language = language;
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const blocks = buffer.split("\n\n");
+        buffer = blocks.pop() ?? "";
+
+        for (const block of blocks) {
+          const events = parseSseEvents(block);
+          for (const event of events) {
+            if (event.type === "token") {
+              rendered += event.token;
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantId ? { ...msg, text: msg.text + event.token } : msg
+                )
+              );
+            } else if (event.type === "done") {
+              finalLanguage = event.language;
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantId ? { ...msg, language: event.language } : msg
+                )
+              );
+            } else if (event.type === "error") {
+              throw new Error(event.message);
+            }
+          }
+        }
+      }
+
+      if (!rendered.trim()) {
+        throw new Error("Model returned an empty response.");
+      }
+      speak(rendered, finalLanguage);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown error";
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantId
+            ? {
+              ...msg,
+              text: `Cannot reach backend/Ollama. ${detail}. Start backend (\`uvicorn app:app --reload\`) and Ollama.`,
+              language: "English",
+            }
+            : msg
+        )
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  const visibleMessages = showBookmarksOnly
+    ? messages.filter((msg) => msg.bookmarked)
+    : messages;
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl p-4 md:p-6">
@@ -200,10 +325,23 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-slate-900">LearnLite</h1>
-            <p className="text-xs text-slate-500">Gemma 4 via Ollama (offline)</p>
+            <p className="text-xs text-slate-500">Offline + Streaming + Memory + KaTeX</p>
           </div>
-          <div className="ml-auto rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs text-emerald-700">
-            Offline ready
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+              onClick={() => setShowBookmarksOnly((v) => !v)}
+            >
+              {showBookmarksOnly ? "Show all" : "Bookmarks"}
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-slate-300 px-2 py-1 text-xs text-slate-600 hover:bg-slate-50"
+              onClick={newChat}
+            >
+              New chat
+            </button>
           </div>
         </header>
 
@@ -218,11 +356,10 @@ export default function App() {
                   key={lvl}
                   type="button"
                   onClick={() => setLevel(lvl)}
-                  className={`rounded-full border px-3 py-1 text-xs ${
-                    level === lvl
-                      ? "border-emerald-600 bg-emerald-600 text-white"
-                      : "border-slate-300 bg-white text-slate-700"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs ${level === lvl
+                    ? "border-emerald-600 bg-emerald-600 text-white"
+                    : "border-slate-300 bg-white text-slate-700"
+                    }`}
                 >
                   {levelLabel[lvl]}
                 </button>
@@ -283,56 +420,58 @@ export default function App() {
               key={item}
               type="button"
               className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-xs text-slate-700 hover:border-emerald-400 hover:bg-emerald-50"
-              onClick={() => sendMessage(item)}
+              onClick={() => void sendMessage(item)}
             >
               {item}
             </button>
           ))}
         </div>
 
-        <section className="h-[420px] space-y-4 overflow-y-auto bg-white p-4">
-          {messages.map((message) => {
-            const steps = formatSteps(message.text);
-            return (
+        <section className="h-[430px] space-y-4 overflow-y-auto bg-white p-4">
+          {visibleMessages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+            >
               <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm ${
-                    message.role === "user"
-                      ? "rounded-br-md bg-emerald-600 text-white"
-                      : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${message.role === "user"
+                  ? "rounded-br-md bg-emerald-600 text-white"
+                  : "rounded-bl-md border border-slate-200 bg-white text-slate-800"
                   }`}
-                >
-                  {message.role === "assistant" && message.language && message.language !== "English" ? (
-                    <div className="mb-2 inline-block rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  {message.role === "assistant" &&
+                    message.language &&
+                    message.language !== "English" ? (
+                    <div className="inline-block rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
                       {message.language}
                     </div>
                   ) : null}
-
-                  <div className="space-y-2">
-                    {steps.length > 1 ? (
-                      steps.map((step, index) => (
-                        <div key={step + index} className="flex gap-2">
-                          <span className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-semibold text-emerald-700">
-                            {index + 1}
-                          </span>
-                          <span>{step}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p>{message.text}</p>
-                    )}
-                  </div>
+                  {message.role === "assistant" ? (
+                    <button
+                      type="button"
+                      className="rounded border border-slate-300 px-2 py-0.5 text-[10px] text-slate-600 hover:bg-slate-50"
+                      onClick={() => toggleBookmark(message.id)}
+                    >
+                      {message.bookmarked ? "Bookmarked" : "Bookmark"}
+                    </button>
+                  ) : null}
                 </div>
-              </div>
-            );
-          })}
 
-          {loading ? (
-            <div className="text-sm text-slate-500">Thinking...</div>
-          ) : null}
+                {message.role === "assistant" ? (
+                  <div className="space-y-2 leading-7 [&_.katex-display]:overflow-x-auto [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-1">
+                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                      {message.text || (loading ? "Streaming response..." : "")}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{message.text}</p>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {loading ? <div className="text-sm text-slate-500">Streaming response...</div> : null}
         </section>
 
         <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 p-4">
@@ -342,9 +481,7 @@ export default function App() {
             placeholder="Ask a question in any language..."
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                void sendMessage();
-              }
+              if (e.key === "Enter") void sendMessage();
             }}
           />
           <button
@@ -358,8 +495,9 @@ export default function App() {
           </button>
           <button
             type="button"
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
             onClick={() => void sendMessage()}
+            disabled={loading}
           >
             Send
           </button>
