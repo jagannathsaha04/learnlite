@@ -327,7 +327,7 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-base font-semibold text-white">LearnLite</h1>
-            <p className="text-xs text-slate-400">Intelligent AI Tutor • Instant Responses • Persistent Memory • LaTeX Support</p>
+            <p className="text-xs text-slate-400">Your Intelligent AI Tutor</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <button
