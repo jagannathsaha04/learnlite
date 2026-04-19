@@ -86,3 +86,4 @@ Open the URL shown by Vite (usually `http://127.0.0.1:5173`).
 - `requirements.txt` - Python dependencies
 - `frontend/` - React + Tailwind client
 
+Update Sun Apr 19 23:53:17 IST 2026
